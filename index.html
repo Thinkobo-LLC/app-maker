@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Submit Thinkobo App</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 40px;
+      background: #f5f7fb;
+    }
+
+    .box {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      background: black;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h1>📦 Submit Thinkobo App</h1>
+
+  <input type="file" id="folder" webkitdirectory multiple>
+  <br><br>
+
+  <button onclick="submitApp()">Submit via Gmail</button>
+
+  <p id="status"></p>
+</div>
+
+<script>
+async function submitApp() {
+  const files = document.getElementById("folder").files;
+
+  if (files.length === 0) {
+    alert("Upload a folder first!");
+    return;
+  }
+
+  let fileNames = [];
+  let yamlContent = "";
+
+  for (let file of files) {
+    fileNames.push(file.webkitRelativePath);
+
+    if (file.name === "thinkobo_read.yml") {
+      yamlContent = await file.text();
+    }
+  }
+
+  if (!yamlContent) {
+    alert("❌ Missing thinkobo_read.yml");
+    return;
+  }
+
+  // Extract simple info (basic parsing)
+  let appName = "Unknown App";
+  let author = "Unknown";
+
+  const nameMatch = yamlContent.match(/name:\s*["']?(.*)/);
+  const authorMatch = yamlContent.match(/author:\s*["']?(.*)/);
+
+  if (nameMatch) appName = nameMatch[1];
+  if (authorMatch) author = authorMatch[1];
+
+  const subject = encodeURIComponent("📦 Thinkobo App Submission - " + appName);
+
+  const body = encodeURIComponent(
+`New Thinkobo App Submission!
+
+App Name: ${appName}
+Author: ${author}
+
+Files:
+${fileNames.join("\n")}
+
+IMPORTANT:
+Please attach the project folder manually before sending.
+`
+  );
+
+  const gmailURL = `https://mail.google.com/mail/?view=cm&fs=1&to=your_email@gmail.com&su=${subject}&body=${body}`;
+
+  window.open(gmailURL, "_blank");
+}
+</script>
+
+</body>
+</html>
